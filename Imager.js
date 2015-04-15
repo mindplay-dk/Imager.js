@@ -124,6 +124,7 @@
         this.widthsMap        = {};
         this.refreshPixelRatio();
         this.widthInterpolator = opts.widthInterpolator || returnFn;
+        this.srcInterpolator   = opts.srcInterpolator || returnFn;
 
         // Needed as IE8 adds a default `width`/`height` attribute…
         this.gif.removeAttribute('height');
@@ -359,9 +360,12 @@
     };
 
     Imager.prototype.changeImageSrcToUseNewImageDimensions = function (src, selectedWidth) {
-        return src
-            .replace(/{width}/g, Imager.transforms.width(selectedWidth, this.widthsMap))
-            .replace(/{pixel_ratio}/g, Imager.transforms.pixelRatio(this.devicePixelRatio));
+        var width      = Imager.transforms.width(selectedWidth, this.widthsMap),
+            pixelRatio = Imager.transforms.pixelRatio(this.devicePixelRatio);
+
+        return this.srcInterpolator(src
+            .replace(/{width}/g, width)
+            .replace(/{pixel_ratio}/g, pixelRatio), width, pixelRatio);
     };
 
     Imager.getPixelRatio = function getPixelRatio(context) {
