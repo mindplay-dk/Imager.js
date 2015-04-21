@@ -123,6 +123,7 @@
         this.availableWidths  = opts.availableWidths || defaultWidths;
         this.onImagesReplaced = opts.onImagesReplaced || noop;
         this.widthsMap        = {};
+        this.srcCache         = {};
         this.refreshPixelRatio();
         this.widthInterpolator = opts.widthInterpolator || returnFn;
         this.srcInterpolator   = opts.srcInterpolator || returnFn;
@@ -365,12 +366,18 @@
     };
 
     Imager.prototype.changeImageSrcToUseNewImageDimensions = function (src, selectedWidth) {
-        var width      = Imager.transforms.width(selectedWidth, this.widthsMap),
-            pixelRatio = Imager.transforms.pixelRatio(this.devicePixelRatio);
+        var key = src + '@' + selectedWidth;
 
-        return this.srcInterpolator(src
-            .replace(/{width}/g, width)
-            .replace(/{pixel_ratio}/g, pixelRatio), width, pixelRatio);
+        if (!this.srcCache[key]) {
+            var width      = Imager.transforms.width(selectedWidth, this.widthsMap),
+                pixelRatio = Imager.transforms.pixelRatio(this.devicePixelRatio);
+
+            this.srcCache[key] = this.srcInterpolator(src
+                .replace(/{width}/g, width)
+                .replace(/{pixel_ratio}/g, pixelRatio), width, pixelRatio);
+        }
+
+        return this.srcCache[key];
     };
 
     Imager.getPixelRatio = function getPixelRatio(context) {
